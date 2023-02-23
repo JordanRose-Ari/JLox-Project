@@ -1,0 +1,216 @@
+type Query {
+  tokens(code: String!): [Token!]!
+  parse(code: String!, id: Int) : Expr
+  run(code: String!, input: String) : String!
+  sign(code: String!) : String!
+}
+
+enum TokenType {
+  LEFT_PAREN
+  RIGHT_PAREN
+  LEFT_BRACE
+  RIGHT_BRACE
+  COMMA
+  DOT
+  MINUS
+  PLUS
+  SEMICOLON
+  SLASH
+  STAR
+  BANG
+  BANG_EQUAL
+  EQUAL
+  EQUAL_EQUAL
+  GREATER
+  GREATER_EQUAL
+  LESS
+  LESS_EQUAL
+  IDENTIFIER
+  STRING
+  NUMBER
+  AND
+  CLASS
+  ELSE
+  FALSE
+  FUN
+  FOR
+  IF
+  NIL
+  OR
+  PRINT
+  RETURN
+  SUPER
+  THIS
+  TRUE
+  VAR
+  WHILE
+  PROTO
+  EOF
+}
+
+type Token {
+  type : TokenType!
+  lexeme : String!
+  literal : LiteralValue!
+  line : Int!
+}
+
+union LiteralValue = LiteralString | LiteralFloat | LiteralBoolean | LiteralNull | Function | ClassDecl
+
+type LiteralString {
+  value : String!
+}
+
+type LiteralFloat {
+  value : Float!
+}
+
+type LiteralBoolean {
+  value : Boolean!
+}
+
+type LiteralNull {
+  value : Boolean!
+}
+
+type Function implements Stmt {
+  id : Int!
+  name: Token!
+  params: [Token!]
+  body: [Stmt!]
+}
+
+type ClassDecl implements Stmt {
+  id : Int!
+  name: Token!
+  superclass: Variable
+  methods: [Function!]!
+}
+
+interface Expr {
+  id : Int!
+}
+
+type Binary implements Expr {
+  id : Int!
+  left : Expr!
+  operator : Token!
+  right : Expr!
+}
+
+type Unary implements Expr {
+  id : Int!
+  operator : Token!
+  right : Expr!
+}
+
+type This implements Expr {
+  id : Int!
+  keyword : Token!
+}
+
+type Set implements Expr {
+  id : Int!
+  object : Expr!
+  name : Token!
+  value : Expr!
+}
+
+type Literal implements Expr {
+  id : Int!
+  value : LiteralValue!
+}
+
+type Grouping implements Expr {
+  id : Int!
+  expression : Expr!
+}
+
+type Call implements Expr {
+  id: Int!
+  callee : Expr!
+  paren: Token!
+  arguments: [Expr!]
+}
+
+type Get implements Expr {
+  id: Int!
+  object: Expr!
+  name: Token!
+}
+
+interface Stmt {
+  id : Int!
+}
+
+type Expression implements Stmt {
+  id : Int!
+  expression : Expr
+}
+
+type Print implements Stmt {
+  id: Int!
+  expression : Expr
+}
+
+type Block implements Stmt {
+  id: Int!
+  statements: [Stmt!]
+}
+
+type If implements Stmt {
+  id: Int!
+  condition: Expr!
+  then: Stmt!
+  else: Stmt
+}
+
+type While implements Stmt {
+  id: Int!
+  condition: Expr!
+  body: Stmt
+}
+
+type Logical implements Expr {
+  id: Int!
+  left: Expr!
+  operator: Token!
+  right: Expr!
+}
+
+type Var implements Stmt {
+  id: Int!
+  name : Token!
+  initializer : Expr!
+}
+
+type Return implements Stmt {
+  id: Int!
+  keyword: Token!
+  value: Expr!
+}
+
+type Variable implements Expr {
+  id: Int!
+  name : Token!
+}
+
+type Assignment implements Expr {
+  id: Int!
+  name: Token!
+  value: Expr!
+}
+
+enum AbstractValue {
+  BOTTOM
+  TOP
+  POSITIVE
+  NEGATIVE
+  ZERO
+}
+
+type Super implements Expr {
+  id: Int!
+  keyword: Token!
+  method: Token!
+}

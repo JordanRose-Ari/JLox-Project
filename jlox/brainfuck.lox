@@ -1,0 +1,130 @@
+fun cons(h, t) {
+  fun list(s) {
+      return s(h,t);
+  }
+  return list;
+}
+
+fun head(h, t) {
+  return h;
+}
+
+fun tail(h, t) {
+  return t;
+}
+
+fun length(l) {
+  fun iterate(l, total) {
+    if (l == nil) {
+      return 0;
+    }
+    total = iterate(l(tail), total);
+    return total + 1;
+  }
+  return iterate(l, 0);
+}
+
+fun get(idx, lst) {
+  if (idx == 0) {
+    return lst(head);
+  }
+  return get(idx - 1, lst(tail));
+}
+
+fun set(idx, val, l) {
+  if (l == nil) {
+    return;
+  }
+  if (idx == 0) {
+    return cons(val, set(idx - 1, val, l(tail)));
+  } else {
+   return cons(l(head), set(idx - 1, val, l(tail)));
+  }
+}
+
+fun append(val, l) {
+  if (l == nil) {
+    return cons(val, nil);
+  } else {
+    return cons(l(head), append(val, l(tail)));
+  }
+}
+
+var s = getc();
+var program = cons(s, nil);
+
+// Read input into list
+while (s) {
+  s = getc();
+  program = append(s, program);
+}
+
+var data = cons(0, nil);
+var pc = 0;
+var dp = 0;
+var nesting = 0;
+var old_nesting;
+
+while (pc != length(program) and get(pc, program) != nil) {
+    var inst = get(pc, program);
+    if (inst == "+") {
+        var current = get(dp, data);
+        data = set(dp, current + 1, data);
+        pc = pc + 1;
+    } else if (inst == "-") {
+        var current = get(dp, data);
+        data = set(dp, current - 1, data);
+        pc = pc + 1;
+    } else if (inst == ".") {
+        putc(get(dp, data));
+        pc = pc + 1;
+    } else if (inst == ">") {
+        if (dp == length(data) - 1) {
+            data = append(0, data);
+        }
+        dp = dp + 1;
+        pc = pc + 1;
+    } else if (inst == "<") {
+        if (dp != 0) {
+            dp = dp - 1;
+        }
+        pc = pc + 1;
+    } else if (inst == "[") {
+        if (get(dp, data) == 0) {
+            old_nesting = nesting;
+            while (get(pc, program) != "]" or nesting != old_nesting) {
+                pc = pc + 1;
+                if (get(pc, program) == "[") {
+                    nesting = nesting + 1;
+                }
+                if (get(pc, program) == "]" and nesting > old_nesting) {
+                    nesting = nesting - 1;
+                }
+            }
+        } else {
+            pc = pc + 1;
+        }
+    } else if (inst == "]") {
+        if (get(dp, data) != 0) {
+            old_nesting = nesting;
+            while (get(pc, program) != "[" or nesting != old_nesting) {
+                pc = pc - 1;
+                if (get(pc, program) == "]") {
+                    nesting = nesting + 1;
+                }
+                if (get(pc, program) == "[" and nesting > old_nesting) {
+                    nesting = nesting - 1;
+                }
+            }
+        } else {
+            pc = pc + 1;
+        }
+    } else {
+        //print "Unknown instruction " + get(pc, program);
+        print "Unknown instruction ";
+        print pc;
+        print get(pc, program);
+        pc = length(program);
+    }
+}
+print "";
